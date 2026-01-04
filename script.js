@@ -1,3 +1,9 @@
+const password = prompt("Enter the password:");
+
+if (password !== "lsad123") {
+  document.body.innerHTML = "<h1>Access Denied</h1>";
+  throw new Error("Wrong password");
+}
 // Initialize map
 //const map = L.map('map').setView([0, 0], 2); // starting at world view
 // Initialize map centered on Montreal
@@ -44,3 +50,4 @@ fetchWaypoints();
 
 // Refresh every 5 seconds
 setInterval(fetchWaypoints, 5000);
+
