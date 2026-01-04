@@ -17,19 +17,17 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 let markers = []; // store markers to remove later
 
-const markersMap = new Map(); // key: loc.name (or ID), value: marker
-
 async function fetchWaypoints() {
   try {
     const res = await fetch('https://dataexpert-api.onrender.com/camps');
     const data = await res.json();
 
-    const newKeys = new Set();
+    // Remove old markers
+    markers.forEach(m => map.removeLayer(m));
+    markers = [];
 
+    // Add new markers
     data.forEach(loc => {
-      const key = loc.name; // unique identifier
-      newKeys.add(key);
-
       const popupContent = `
         <strong>${loc.name}</strong><br>
         Date: ${loc.date}<br>
@@ -37,37 +35,19 @@ async function fetchWaypoints() {
         Notes: ${loc.campnotes}
       `;
 
-      if (markersMap.has(key)) {
-        // Update existing marker
-        const marker = markersMap.get(key);
-        marker.setLatLng([loc.expertlat, loc.expertlon]);
-        marker.setPopupContent(popupContent);
-      } else {
-        // Add new marker
-        const marker = L.marker([loc.expertlat, loc.expertlon])
-          .addTo(map)
-          .bindPopup(popupContent, { autoClose: false, closeOnClick: false });
-        markersMap.set(key, marker);
-      }
+      const marker = L.marker([loc.expertlat, loc.expertlon])
+        .addTo(map)
+        .bindPopup(popupContent, { autoClose: false, closeOnClick: false }); // bind all info in a single popup
+
+      markers.push(marker);
     });
-
-    // Remove markers that no longer exist
-    for (const [key, marker] of markersMap.entries()) {
-      if (!newKeys.has(key)) {
-        map.removeLayer(marker);
-        markersMap.delete(key);
-      }
-    }
-
   } catch (err) {
     console.error('Failed to fetch waypoints:', err);
   }
 }
-
 
 // Initial load
 fetchWaypoints();
 
 // Refresh every 5 seconds
 setInterval(fetchWaypoints, 5000);
-
