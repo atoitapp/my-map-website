@@ -1,53 +1,45 @@
-// Not very secure Password
-const password = prompt("Enter the password:");
+// server.js
+import express from 'express';
+import cors from 'cors';
 
-if (password !== "lsad123") {
-  document.body.innerHTML = "<h1>Access Denied</h1>";
-  throw new Error("Wrong password");
-}
-// Initialize map
-//const map = L.map('map').setView([0, 0], 2); // starting at world view
-// Initialize map centered on Montreal
-const map = L.map('map').setView([45.5017, -73.5673], 13); // Montreal, zoomed in
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-// Add OpenStreetMap tiles
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© OpenStreetMap contributors',
-}).addTo(map);
+// Server-side password
+const PASSWORD = 'lsad123';
 
-let markers = []; // store markers to remove later
+// Example camp data
+let camps = [
+  { name: 'Camp A', date: '2026-01-04', nowtime: '10:00', campnotes: 'Note A', expertlat: 45.5017, expertlon: -73.5673 },
+  { name: 'Camp B', date: '2026-01-04', nowtime: '11:00', campnotes: 'Note B', expertlat: 45.505, expertlon: -73.565 },
+];
 
-async function fetchWaypoints() {
-  try {
-    const res = await fetch('https://dataexpert-api.onrender.com/camps');
-    const data = await res.json();
-
-    // Remove old markers
-    markers.forEach(m => map.removeLayer(m));
-    markers = [];
-
-    // Add new markers
-    data.forEach(loc => {
-      const popupContent = `
-        <strong>${loc.name}</strong><br>
-        Date: ${loc.date}<br>
-        Time: ${loc.nowtime}<br>
-        Notes: ${loc.campnotes}
-      `;
-
-      const marker = L.marker([loc.expertlat, loc.expertlon])
-        .addTo(map)
-        .bindPopup(popupContent, { autoClose: false, closeOnClick: false }); // bind all info in a single popup
-
-      markers.push(marker);
-    });
-  } catch (err) {
-    console.error('Failed to fetch waypoints:', err);
+// Login endpoint
+app.post('/login', (req, res) => {
+  const { password } = req.body;
+  if (password === PASSWORD) {
+    res.json({ success: true, token: 'secret-token' }); // simple token for demo
+  } else {
+    res.status(401).json({ success: false, message: 'Wrong password' });
   }
-}
+});
 
-// Initial load
-fetchWaypoints();
+// Camps endpoint
+app.get('/camps', (req, res) => {
+  // In production, validate token here
+  res.json(camps);
+});
 
-// Refresh every 5 seconds
-setInterval(fetchWaypoints, 5000);
+// Optional: simulate updating camps every 10 seconds
+setInterval(() => {
+  const latOffset = (Math.random() - 0.5) / 100;
+  const lonOffset = (Math.random() - 0.5) / 100;
+  camps = camps.map(c => ({
+    ...c,
+    expertlat: c.expertlat + latOffset,
+    expertlon: c.expertlon + lonOffset
+  }));
+}, 10000);
+
+app.listen(3000, () => console.log('Server running at http://localhost:3000'));
