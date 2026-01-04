@@ -1,3 +1,4 @@
+// Not very secure Password
 const password = prompt("Enter the password:");
 
 if (password !== "lsad123") {
@@ -36,7 +37,7 @@ async function fetchWaypoints() {
 
       const marker = L.marker([loc.expertlat, loc.expertlon])
         .addTo(map)
-        .bindPopup(popupContent); // bind all info in a single popup
+        .bindPopup(popupContent, { autoClose: false, closeOnClick: false }); // bind all info in a single popup
 
       markers.push(marker);
     });
@@ -50,4 +51,3 @@ fetchWaypoints();
 
 // Refresh every 5 seconds
 setInterval(fetchWaypoints, 5000);
-
