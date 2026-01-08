@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dynamic Map</title>
+  <meta charset="UTF-8" />
+  <title>Camps Map</title>
 
   <!-- Leaflet CSS -->
   <link
@@ -11,16 +10,75 @@
     href="https://unpkg.com/leaflet/dist/leaflet.css"
   />
 
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    #map {
+      height: 400px;
+      margin-bottom: 10px;
+    }
+
+    #controls {
+      margin-bottom: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px;
+      text-align: left;
+    }
+
+    th {
+      background: #f2f2f2;
+    }
+
+    tr:hover {
+      background: #eef;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-  <h1>LSAD Map</h1>
-  <div id="map"></div>
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <!-- Custom JS -->
-  <script src="script.js"></script>
+<h2>Camps Map</h2>
+
+<div id="map"></div>
+
+<div id="controls">
+  <input
+    type="text"
+    id="filterInput"
+    placeholder="Filter camps..."
+  />
+  <button id="exportBtn">Export to CSV</button>
+</div>
+
+<table id="campTable">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Date</th>
+      <th>Time</th>
+      <th>Notes</th>
+      <th>Latitude</th>
+      <th>Longitude</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<!-- Your App JS -->
+<script src="app.js"></script>
+
 </body>
 </html>
