@@ -91,6 +91,7 @@ function renderCamps(filterText = "") {
 	  <td>${loc.syringe}</td>
 	  <td>${loc.pipe}</td>
 	  <td>${loc.sandwich}</td>
+	  <td>${loc.soup}</td>
 	  <td>${loc.type}</td>
       <td>${loc.campnotes || ""}</td>
     `;
@@ -103,6 +104,14 @@ function renderCamps(filterText = "") {
       map.removeLayer(marker);
     }
   }
+  // Remove markers that no longer exist in API data
+	for (const [id, marker] of markers) {
+	  if (!campsData.find(c => c.id === id)) {
+		map.removeLayer(marker);
+		markers.delete(id);
+	  }
+	}
+
 }
 function exportToCSV() {
   // Use CURRENTLY FILTERED data (what is visible)
@@ -111,13 +120,19 @@ function exportToCSV() {
 
   const rows = [];
   const headers = [
-    "Name",
-    "Date",
-    "Time",
-    "Latitude",
-    "Longitude",
-    "Notes"
-  ];
+  "Name",
+  "Date",
+  "Time",
+  "Men",
+  "Women",
+  "Syringe",
+  "Pipe",
+  "Sandwich",
+  "Soup",
+  "Type",
+  "Notes"
+];
+
 
   rows.push(headers.join(","));
 
@@ -133,13 +148,18 @@ function exportToCSV() {
     if (loc.expertlat == null || loc.expertlon == null) return;
 
     const row = [
-      loc.name,
-      loc.date,
-      loc.nowtime,
-      loc.expertlat,
-      loc.expertlon,
-      `"${(loc.campnotes || "").replace(/"/g, '""')}"`
-    ];
+  loc.name,
+  loc.date,
+  loc.nowtime,
+  loc.men,
+  loc.women,
+  loc.syringe,
+  loc.pipe,
+  loc.sandwich,
+  loc.soup,
+  loc.type,
+  `"${(loc.campnotes || "").replace(/"/g, '""')}"`
+];
 
     rows.push(row.join(","));
   });
@@ -157,13 +177,16 @@ function exportToCSV() {
   document.body.removeChild(link);
 }
 
-document.getElementById("exportCsv").addEventListener("click", exportToCSV);
+window.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("exportCsv")
+    .addEventListener("click", exportToCSV);
 
-// SEARCH INPUT
-document.getElementById("campSearch").addEventListener("input", e => {
-  renderCamps(e.target.value);
+  document.getElementById("campSearch")
+    .addEventListener("input", e => {
+      renderCamps(e.target.value);
+    });
+
+  fetchWaypoints();
+  setInterval(fetchWaypoints, 30000);
 });
 
-// START APP
-fetchWaypoints();
-setInterval(fetchWaypoints, 30000);
