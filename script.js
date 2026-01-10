@@ -177,8 +177,7 @@ function exportToCSV() {
   document.body.removeChild(link);
 }
 
-window.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("exportCsv")
+document.getElementById("exportCsv")
     .addEventListener("click", exportToCSV);
 
   document.getElementById("campSearch")
@@ -187,6 +186,6 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 
   fetchWaypoints();
-  setInterval(fetchWaypoints, 30000);
-});
+  setInterval(fetchWaypoints, 5000);
+
 
