@@ -100,6 +100,60 @@ function renderCamps(filterText = "") {
     }
   }
 }
+function exportToCSV() {
+  // Use CURRENTLY FILTERED data (what is visible)
+  const search =
+    document.getElementById("campSearch")?.value.toLowerCase() || "";
+
+  const rows = [];
+  const headers = [
+    "Name",
+    "Date",
+    "Time",
+    "Latitude",
+    "Longitude",
+    "Notes"
+  ];
+
+  rows.push(headers.join(","));
+
+  campsData.forEach(loc => {
+    // Apply same filter as renderCamps
+    const matches =
+      loc.name?.toLowerCase().includes(search) ||
+      loc.date?.toLowerCase().includes(search) ||
+      loc.nowtime?.toLowerCase().includes(search) ||
+      loc.campnotes?.toLowerCase().includes(search);
+
+    if (!matches) return;
+    if (loc.expertlat == null || loc.expertlon == null) return;
+
+    const row = [
+      loc.name,
+      loc.date,
+      loc.nowtime,
+      loc.expertlat,
+      loc.expertlon,
+      `"${(loc.campnotes || "").replace(/"/g, '""')}"`
+    ];
+
+    rows.push(row.join(","));
+  });
+
+  const csvContent = rows.join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "camps.csv";
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+document.getElementById("exportCsv").addEventListener("click", exportToCSV);
 
 // SEARCH INPUT
 document.getElementById("campSearch").addEventListener("input", e => {
