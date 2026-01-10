@@ -1,10 +1,15 @@
-// Not very secure Password
-const password = prompt("Enter the password:");
+// Not secure Password
+const AUTH_KEY = "authorized";
 
-if (password !== "lsad123") {
-  document.body.innerHTML = "<h1>Access Denied</h1>";
-  throw new Error("Wrong password");
+if (!sessionStorage.getItem(AUTH_KEY)) {
+  const password = prompt("Enter the password:");
+  if (password !== "lsad123") {
+    document.body.innerHTML = "<h1>Access Denied</h1>";
+    throw new Error("Wrong password");
+  }
+  sessionStorage.setItem(AUTH_KEY, "true");
 }
+
 // Initialize map
 //const map = L.map('map').setView([0, 0], 2); // starting at world view
 // Initialize map centered on Montreal
