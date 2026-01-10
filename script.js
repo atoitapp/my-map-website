@@ -86,8 +86,12 @@ function renderCamps(filterText = "") {
       <td>${loc.name}</td>
       <td>${loc.date}</td>
       <td>${loc.nowtime}</td>
-      <td>${loc.expertlat}</td>
-      <td>${loc.expertlon}</td>
+      <td>${loc.men}</td>
+      <td>${loc.women}</td>
+	  <td>${loc.syringe}</td>
+	  <td>${loc.pipe}</td>
+	  <td>${loc.sandwich}</td>
+	  <td>${loc.type}</td>
       <td>${loc.campnotes || ""}</td>
     `;
     tableBody.appendChild(row);
