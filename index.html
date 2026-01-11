@@ -16,7 +16,44 @@
 </head>
 <body>
   <h1>LSAD Map</h1>
-  <div id="map"></div>
+  
+  <div id="layout" style="display:flex; gap:10px;">
+  
+  <div id="campPanel" style="
+  width:200px;
+  border:1px solid #ccc;
+  padding:8px;
+  overflow-y:auto;
+  display:none;
+  height:500px;
+  box-sizing:border-box;
+">
+
+  <div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:6px;
+  ">
+    <strong>Camps at this location</strong>
+    <button id="closePanel" style="
+      border:none;
+      background:none;
+      font-size:18px;
+      cursor:pointer;
+    ">✕</button>
+  </div>
+
+  <div id="campPanelContent"></div>
+</div>
+
+
+  <!-- MAP -->
+  <div id="map" style="flex:1; height:500px;"></div>
+
+</div>
+
+  
   
   <input
   type="text"
@@ -29,6 +66,7 @@
 </button>
 
   <!-- Table Camp -->
+  <h2>Log Data</h2>
 <table id="campsTable" border="1" cellpadding="8" cellspacing="0" style="width:100%; margin-top:15px;">
   <thead>
     <tr>
@@ -48,9 +86,33 @@
   <tbody></tbody>
 </table>
 
+<!-- Summary Data Table -->
+<h2>Summary Data</h2>
+<button id="exportSummaryCsv" style="margin:10px 0;">
+  Export Summary Table to CSV
+</button>
+<table id="summaryTable" border="1" cellpadding="8" cellspacing="0"
+       style="width:100%; margin-top:15px;">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Date</th>
+      <th>Total Men</th>
+      <th>Total Women</th>
+      <th>Total Syringes</th>
+      <th>Total Pipes</th>
+      <th>Total Sandwiches</th>
+      <th>Total Soup</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
   <!-- Custom JS -->
   <script src="script.js"></script>
 </body>
