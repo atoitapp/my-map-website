@@ -212,7 +212,7 @@ function showCampsInPanel(key) {
       Syringe: ${loc.syringe}, Pipe: ${loc.pipe}<br>
       Sandwich: ${loc.sandwich}, Soup: ${loc.soup}<br>
       Type: ${loc.type}<br>
-      <em>${loc.campnotes || ""}</em>
+      Note: <em>${loc.campnotes || ""}</em>
     `;
 
     content.appendChild(div);
@@ -387,4 +387,5 @@ window.addEventListener("DOMContentLoaded", () => {
   fetchSummaryData();
   setInterval(fetchWaypoints, 30000);
 });
+
 
