@@ -201,24 +201,38 @@ function showCampsInPanel(key) {
 
   camps.forEach(loc => {
     const div = document.createElement("div");
-    div.style.borderBottom = "1px solid #ddd";
-    div.style.padding = "6px 0";
+    div.className = "camp-item";
 
     div.innerHTML = `
-      <strong>${loc.name}</strong><br>
-      Date: ${loc.date}<br>
-      Time: ${loc.nowtime}<br>
-      Men: ${loc.men}, Women: ${loc.women}<br>
-      Syringe: ${loc.syringe}, Pipe: ${loc.pipe}<br>
-      Sandwich: ${loc.sandwich}, Soup: ${loc.soup}<br>
-      Type: ${loc.type}<br>
-      Note: <em>${loc.campnotes || ""}</em>
+      <div class="camp-title">${loc.name}</div>
+
+      <div class="camp-grid">
+        <div class="label">Date</div>
+        <div class="value">${loc.date}</div>
+
+        <div class="label">Time</div>
+        <div class="value">${loc.nowtime}</div>
+
+        <div class="label">Men / Women</div>
+        <div class="value">${loc.men} / ${loc.women}</div>
+
+        <div class="label">Syringe / Pipe</div>
+        <div class="value">${loc.syringe} / ${loc.pipe}</div>
+
+        <div class="label">Sandwich / Soup</div>
+        <div class="value">${loc.sandwich} / ${loc.soup}</div>
+
+        <div class="label">Type</div>
+        <div class="value">${loc.type}</div>
+
+        <div class="label">Note</div>
+        <div class="value note">${loc.campnotes || "—"}</div>
+      </div>
     `;
 
     content.appendChild(div);
   });
 }
-
 
 function exportToCSV() {
   // Use CURRENTLY FILTERED data (what is visible)
@@ -387,5 +401,4 @@ window.addEventListener("DOMContentLoaded", () => {
   fetchSummaryData();
   setInterval(fetchWaypoints, 30000);
 });
-
 
