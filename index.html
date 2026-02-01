@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>LSAD Map [Test]</h1>
+  <h1>Carte d'expert</h1>
   
   <div id="layout" style="display:flex; gap:10px;">
   
@@ -35,7 +35,7 @@
     align-items:center;
     margin-bottom:6px;
   ">
-    <strong>Camps at this location</strong>
+    <strong>Données à cet emplacement</strong>
     <button id="closePanel" style="
       border:none;
       background:none;
@@ -62,48 +62,48 @@
   style="width:100%; padding:8px; margin:15px 0;"
 />
 <button id="exportCsv" style="margin-bottom:10px;">
-  Export to CSV
+  Exporter les données
 </button>
 
   <!-- Table Camp -->
-  <h2>Log Data</h2>
+  <h2>Journal des données</h2>
 <table id="campsTable" border="1" cellpadding="8" cellspacing="0" style="width:100%; margin-top:15px;">
   <thead>
     <tr>
-      <th>Name</th>
+      <th>Nom</th>
       <th>Date</th>
-      <th>Time</th>
-      <th>Men</th>
-      <th>Women</th>
-	  <th>Syringe</th>
+      <th>Heure</th>
+      <th>Homme</th>
+      <th>Femme</th>
+	  <th>Seringue</th>
 	  <th>Pipe</th>
 	  <th>Sandwich</th>
-	  <th>Soup</th>
+	  <th>Soupe/Eau</th>
 	  <th>Type</th>
-      <th>Notes</th>
+      <th>Note</th>
     </tr>
   </thead>
   <tbody></tbody>
 </table>
 
 <!-- Summary Data Table -->
-<h2>Summary Data</h2>
+<h2>Total des Données</h2>
 <button id="exportSummaryCsv" style="margin:10px 0;">
-  Export Summary Table to CSV
+  Exporter les données total
 </button>
 <table id="summaryTable" border="1" cellpadding="8" cellspacing="0"
        style="width:100%; margin-top:15px;">
   <thead>
     <tr>
-      <th>Name</th>
+      <th>Nom</th>
       <th>Date</th>
-      <th>Total Men</th>
-      <th>Total Women</th>
-      <th>Total Syringes</th>
+      <th>Total Hommes</th>
+      <th>Total Femmes</th>
+      <th>Total Seringues</th>
       <th>Total Pipes</th>
-      <th>Total Sandwiches</th>
-      <th>Total Soup</th>
-      <th>Notes</th>
+      <th>Total Sandwichs</th>
+      <th>Total Soupes/Eau</th>
+      <th>Resume</th>
     </tr>
   </thead>
   <tbody></tbody>
@@ -117,4 +117,3 @@
   <script src="script.js"></script>
 </body>
 </html>
-
