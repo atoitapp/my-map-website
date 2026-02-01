@@ -161,6 +161,13 @@ function renderCamps(filterText = "") {
         loc.campnotes?.toLowerCase().includes(search);
 
       if (!matches) return;
+	  
+	  const typeMap = {
+	  walker: "Passant",
+      tent: "Tente",
+      nothing: " ",
+    };
+	const typeKey = (loc.type || "").toLowerCase();
 
       const row = document.createElement("tr");
       row.innerHTML = `
@@ -173,7 +180,7 @@ function renderCamps(filterText = "") {
         <td>${loc.pipe}</td>
         <td>${loc.sandwich}</td>
         <td>${loc.soup}</td>
-        <td>${loc.type}</td>
+        <td>${typeMap[typeKey] || loc.type || "Inconnu"}</td>
         <td>${loc.campnotes || ""}</td>
       `;
       tableBody.appendChild(row);
@@ -268,6 +275,13 @@ function exportToCSV() {
 
     if (!matches) return;
     if (loc.expertlat == null || loc.expertlon == null) return;
+	
+	const typeMap = {
+	  walker: "Passant",
+      tent: "Tente",
+      nothing: " ",
+    };
+	const typeKey = (loc.type || "").toLowerCase();
 
     const row = [
   loc.name,
@@ -279,7 +293,7 @@ function exportToCSV() {
   loc.pipe,
   loc.sandwich,
   loc.soup,
-  loc.type,
+  typeMap[typeKey] || loc.type || "Inconnu" ,
   `"${(loc.campnotes || "").replace(/"/g, '""')}"`
 ];
 
