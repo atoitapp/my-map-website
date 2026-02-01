@@ -35,10 +35,10 @@ const iconRed = new L.Icon({
 });
 
 if (!sessionStorage.getItem(AUTH_KEY)) {
-  const password = prompt("Enter the password:");
+  const password = prompt("Entrez le mot de passe:");
   if (password !== "lsad123") {
-    document.body.innerHTML = "<h1>Access Denied</h1>";
-    throw new Error("Wrong password");
+    document.body.innerHTML = "<h1>Accès refusé</h1>";
+    throw new Error("Mot de passe incorrect");
   }
   sessionStorage.setItem(AUTH_KEY, "true");
 }
@@ -73,7 +73,7 @@ async function fetchWaypoints() {
     renderCamps(search);
 
   } catch (err) {
-    console.error("Failed to fetch camps:", err);
+    console.error("Échec du chargement des données :", err);
   }
 }
 
@@ -210,16 +210,16 @@ function showCampsInPanel(key) {
         <div class="label">Date</div>
         <div class="value">${loc.date}</div>
 
-        <div class="label">Time</div>
+        <div class="label">Heure</div>
         <div class="value">${loc.nowtime}</div>
 
-        <div class="label">Men / Women</div>
+        <div class="label">Homme / Femme</div>
         <div class="value">${loc.men} / ${loc.women}</div>
 
-        <div class="label">Syringe / Pipe</div>
+        <div class="label">Seringue / Pipe</div>
         <div class="value">${loc.syringe} / ${loc.pipe}</div>
 
-        <div class="label">Sandwich / Soup</div>
+        <div class="label">Sandwich / Soupe</div>
         <div class="value">${loc.sandwich} / ${loc.soup}</div>
 
         <div class="label">Type</div>
@@ -241,17 +241,17 @@ function exportToCSV() {
 
   const rows = [];
   const headers = [
-  "Name",
+  "Nom",
   "Date",
-  "Time",
-  "Men",
-  "Women",
-  "Syringe",
+  "Heure",
+  "Homme",
+  "Femme",
+  "Seringue",
   "Pipe",
   "Sandwich",
-  "Soup",
+  "Soupe/Eau",
   "Type",
-  "Notes"
+  "Note"
 ];
 
 
@@ -288,11 +288,17 @@ function exportToCSV() {
 
   const csvContent = rows.join("\n");
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  
+  const now = new Date();
+  // Format: YYYY-MM-DD_HH-MM
+  const date = now.toISOString().slice(0, 10);
+  const time = now.toTimeString().slice(0, 5).replace(":", "-");
+
 
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = "camps.csv";
+  link.download = 'Données_d’expert_${date}_${time}.csv';
 
   document.body.appendChild(link);
   link.click();
@@ -392,7 +398,7 @@ window.addEventListener("DOMContentLoaded", () => {
    document
   .getElementById("exportSummaryCsv")
   .addEventListener("click", () => {
-    exportTableToCSV("summaryTable", "summary_data.csv");
+    exportTableToCSV("summaryTable", "Données_total_${date}_${time}.csv");
   });
 
 
