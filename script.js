@@ -298,7 +298,7 @@ function exportToCSV() {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = 'Données_d’expert_${date}_${time}.csv';
+  link.download = `Données_d’expert_${date}_${time}.csv`;
 
   document.body.appendChild(link);
   link.click();
@@ -398,7 +398,7 @@ window.addEventListener("DOMContentLoaded", () => {
    document
   .getElementById("exportSummaryCsv")
   .addEventListener("click", () => {
-    exportTableToCSV("summaryTable", "Données_total_${date}_${time}.csv");
+    exportTableToCSV("summaryTable", `Données_total_${date}_${time}.csv`);
   });
 
 
