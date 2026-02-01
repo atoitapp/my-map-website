@@ -395,6 +395,11 @@ window.addEventListener("DOMContentLoaded", () => {
      document.getElementById("campPanel").style.display = "none";
    });
    
+  const now = new Date();
+  // Format: YYYY-MM-DD_HH-MM
+  const date = now.toISOString().slice(0, 10);
+  const time = now.toTimeString().slice(0, 5).replace(":", "-");
+   
    document
   .getElementById("exportSummaryCsv")
   .addEventListener("click", () => {
