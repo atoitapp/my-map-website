@@ -199,6 +199,8 @@ function renderCamps(filterText = "") {
 function showCampsInPanel(key) {
   const panel = document.getElementById("campPanel");
   const content = document.getElementById("campPanelContent");
+  
+  
 
   const camps = groupedCamps.get(key);
   if (!camps) return;
@@ -207,6 +209,12 @@ function showCampsInPanel(key) {
   content.innerHTML = "";
 
   camps.forEach(loc => {
+	  const typeMap = {
+	  walker: "Passant",
+      tent: "Tente",
+      nothing: " ",
+    };
+	const typeKey = (loc.type || "").toLowerCase();
     const div = document.createElement("div");
     div.className = "camp-item";
 
@@ -230,7 +238,7 @@ function showCampsInPanel(key) {
         <div class="value">${loc.sandwich} / ${loc.soup}</div>
 
         <div class="label">Type</div>
-        <div class="value">${loc.type}</div>
+        <div class="value">${typeMap[typeKey] || loc.type || "Inconnu"}</div>
 
         <div class="label">Note</div>
         <div class="value note">${loc.campnotes || "—"}</div>
