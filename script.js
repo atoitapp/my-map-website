@@ -1,429 +1,122 @@
-let groupedCamps = new Map();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dynamic Map</title>
 
-// Not secure Password
-const AUTH_KEY = "authorized";
-let campsData = [];
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css"
+  />
 
-
-//Waypoint Colors
-const iconBlue = new L.Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-
-const iconGreen = new L.Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-
-const iconRed = new L.Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-
-if (!sessionStorage.getItem(AUTH_KEY)) {
-  const password = prompt("Entrez le mot de passe:");
-  if (password !== "lsad123") {
-    document.body.innerHTML = "<h1>Accès refusé</h1>";
-    throw new Error("Mot de passe incorrect");
-  }
-  sessionStorage.setItem(AUTH_KEY, "true");
-}
-
-// Initialize map
-//const map = L.map('map').setView([0, 0], 2); // starting at world view
-// Initialize map centered on Montreal
-const map = L.map('map').setView([45.5017, -73.5673], 13); // Montreal, zoomed in
-
-// Add OpenStreetMap tiles
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© OpenStreetMap contributors',
-}).addTo(map);
-
-//Initialize OMS
-//const oms = new OverlappingMarkerSpiderfier(map, {
- // keepSpiderfied: true,
-//  nearbyDistance: 20
-//});
-
-const markers = new Map();
-
-async function fetchWaypoints() {
-  try {
-    const res = await fetch("https://dataexpert-api.onrender.com/camps");
-    campsData = await res.json();
-
-    // Re-render map + table using current search filter
-    const search =
-      document.getElementById("campSearch")?.value || "";
-
-    renderCamps(search);
-
-  } catch (err) {
-    console.error("Échec du chargement des données :", err);
-  }
-}
-
-async function fetchSummaryData() {
-  const res = await fetch("https://dataexpert-api.onrender.com/data");
-  const data = await res.json();
-
-  const tbody = document.querySelector("#summaryTable tbody");
-  tbody.innerHTML = "";
-
-  data.forEach(row => {
-    const tr = document.createElement("tr");
-
-    tr.innerHTML = `
-      <td>${row.name}</td>
-      <td>${row.date}</td>
-      <td>${row.totalmen}</td>
-      <td>${row.totalwomen}</td>
-      <td>${row.totalsyringe}</td>
-      <td>${row.totalpipe}</td>
-      <td>${row.totalsandwich}</td>
-      <td>${row.totalsoup}</td>
-      <td>${row.notes || ""}</td>
-    `;
-
-    tbody.appendChild(tr);
-  });
-}
-
-
-function renderCamps(filterText = "") {
-  const visibleKeys = new Set();
-  const tableBody = document.querySelector("#campsTable tbody");
-  tableBody.innerHTML = "";
-  //const seenIds = new Set();
-  const search = filterText.toLowerCase();
-
-  const groups = groupByPosition(campsData);
-  groupedCamps = groups;
-
-  // ===== MAP MARKERS (ADD / UPDATE) =====
-  groups.forEach((group, key) => {
-    const visible = group.filter(loc =>
-      loc.name?.toLowerCase().includes(search) ||
-      loc.date?.toLowerCase().includes(search) ||
-      loc.nowtime?.toLowerCase().includes(search) ||
-      loc.type?.toLowerCase().includes(search) ||
-      loc.campnotes?.toLowerCase().includes(search)
-    );
-
-    if (visible.length === 0) return;
-	visibleKeys.add(key);
-
-    const { expertlat, expertlon, type } = visible[0];
-    const icon = createNumberedIcon(visible.length, type);
-
-    const popupContent = `
-      <strong>${visible.length} logs at this location</strong>
-    `;
-
-    if (markers.has(key)) {
-      markers.get(key)
-        .setIcon(icon)
-		.off("click").on("click", () => showCampsInPanel(key));
-        //.setPopupContent(popupContent)
-        //.addTo(map);
-    } else {
-      const marker = L.marker([expertlat, expertlon], { icon })
-        .addTo(map)
-		.on("click", () => showCampsInPanel(key));
-        //.bindPopup(popupContent);
-
-      markers.set(key, marker);
-    }
-  });
-
-  // ===== TABLE (INDIVIDUAL CAMPS) =====
-  groups.forEach(group => {
-    group.forEach(loc => {
-      const matches =
-        loc.name?.toLowerCase().includes(search) ||
-        loc.date?.toLowerCase().includes(search) ||
-        loc.nowtime?.toLowerCase().includes(search) ||
-        loc.type?.toLowerCase().includes(search) ||
-        loc.campnotes?.toLowerCase().includes(search);
-
-      if (!matches) return;
-	  
-	  const typeMap = {
-	  walker: "Passant",
-      tent: "Tente",
-      nothing: " ",
-    };
-	const typeKey = (loc.type || "").toLowerCase();
-
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${loc.name}</td>
-        <td>${loc.date}</td>
-        <td>${loc.nowtime}</td>
-        <td>${loc.men}</td>
-        <td>${loc.women}</td>
-        <td>${loc.syringe}</td>
-        <td>${loc.pipe}</td>
-        <td>${loc.sandwich}</td>
-        <td>${loc.soup}</td>
-        <td>${typeMap[typeKey] || loc.type || "Inconnu"}</td>
-        <td>${loc.campnotes || ""}</td>
-      `;
-      tableBody.appendChild(row);
-    });
-  });
-
-  // ===== CLEANUP (THIS IS IT) =====
-  for (const [key, marker] of markers) {
-    if (!visibleKeys.has(key)) {
-      map.removeLayer(marker);
-      markers.delete(key);
-    }
-  }
-}
-
-function showCampsInPanel(key) {
-  const panel = document.getElementById("campPanel");
-  const content = document.getElementById("campPanelContent");
-
-  const camps = groupedCamps.get(key);
-  if (!camps) return;
-
-  panel.style.display = "block";
-  content.innerHTML = "";
-
-  camps.forEach(loc => {
-    const div = document.createElement("div");
-    div.className = "camp-item";
-
-    div.innerHTML = `
-      <div class="camp-title">${loc.name}</div>
-
-      <div class="camp-grid">
-        <div class="label">Date</div>
-        <div class="value">${loc.date}</div>
-
-        <div class="label">Heure</div>
-        <div class="value">${loc.nowtime}</div>
-
-        <div class="label">Homme / Femme</div>
-        <div class="value">${loc.men} / ${loc.women}</div>
-
-        <div class="label">Seringue / Pipe</div>
-        <div class="value">${loc.syringe} / ${loc.pipe}</div>
-
-        <div class="label">Sandwich / Soupe</div>
-        <div class="value">${loc.sandwich} / ${loc.soup}</div>
-
-        <div class="label">Type</div>
-        <div class="value">${loc.type}</div>
-
-        <div class="label">Note</div>
-        <div class="value note">${loc.campnotes || "—"}</div>
-      </div>
-    `;
-
-    content.appendChild(div);
-  });
-}
-
-function exportToCSV() {
-  // Use CURRENTLY FILTERED data (what is visible)
-  const search =
-    document.getElementById("campSearch")?.value.toLowerCase() || "";
-
-  const rows = [];
-  const headers = [
-  "Nom",
-  "Date",
-  "Heure",
-  "Homme",
-  "Femme",
-  "Seringue",
-  "Pipe",
-  "Sandwich",
-  "Soupe/Eau",
-  "Type",
-  "Note"
-];
-
-
-  rows.push(headers.join(","));
-
-  campsData.forEach(loc => {
-    // Apply same filter as renderCamps
-    const matches =
-      loc.name?.toLowerCase().includes(search) ||
-      loc.date?.toLowerCase().includes(search) ||
-      loc.nowtime?.toLowerCase().includes(search) ||
-	  loc.type?.toLowerCase().includes(search) ||
-      loc.campnotes?.toLowerCase().includes(search);
-
-    if (!matches) return;
-    if (loc.expertlat == null || loc.expertlon == null) return;
-	
-	const typeMap = {
-	  walker: "Passant",
-      tent: "Tente",
-      nothing: " ",
-    };
-	const typeKey = (loc.type || "").toLowerCase();
-
-    const row = [
-  loc.name,
-  loc.date,
-  loc.nowtime,
-  loc.men,
-  loc.women,
-  loc.syringe,
-  loc.pipe,
-  loc.sandwich,
-  loc.soup,
-  typeMap[typeKey] || loc.type || "Inconnu" ,
-  `"${(loc.campnotes || "").replace(/"/g, '""')}"`
-];
-
-    rows.push(row.join(","));
-  });
-
-  const csvContent = rows.join("\n");
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Carte d'expert</h1>
   
-  const now = new Date();
-  // Format: YYYY-MM-DD_HH-MM
-  const date = now.toISOString().slice(0, 10);
-  const time = now.toTimeString().slice(0, 5).replace(":", "-");
+  <div id="layout" style="display:flex; gap:10px;">
+  
+  <div id="campPanel" style="
+  width:255px;
+  border:1px solid #ccc;
+  padding:8px;
+  overflow-y:auto;
+  display:none;
+  height:500px;
+  box-sizing:border-box;
+">
+
+  <div style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:6px;
+  ">
+    <strong>Données à cet emplacement</strong>
+    <button id="closePanel" style="
+      border:none;
+      background:none;
+      font-size:18px;
+      cursor:pointer;
+    ">✕</button>
+  </div>
+
+  <div id="campPanelContent"></div>
+</div>
 
 
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `Données_d’expert_${date}_${time}.csv`;
+  <!-- MAP -->
+  <div id="map" style="flex:1; height:500px;"></div>
 
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
+</div>
 
-function exportTableToCSV(tableId, filename) {
-  const rows = document.querySelectorAll(`#${tableId} tr`);
-  let csv = [];
-
-  rows.forEach(row => {
-    const cols = row.querySelectorAll("th, td");
-    const rowData = [];
-
-    cols.forEach(col => {
-      let text = col.innerText.replace(/"/g, '""');
-      rowData.push(`"${text}"`);
-    });
-
-    csv.push(rowData.join(","));
-  });
-
-  const csvBlob = new Blob([csv.join("\n")], { type: "text/csv" });
-  const url = URL.createObjectURL(csvBlob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  a.click();
-
-  URL.revokeObjectURL(url);
-}
+  
+  
+  <input
+  type="text"
+  id="campSearch"
+  placeholder="Rechercher des données (nom, date, note…)"
+  style="width:100%; padding:8px; margin:15px 0;"
+/>
 
 
-function groupByPosition(data) {
-  const groups = new Map();
+  <!-- Table Camp -->
+  <h2>Journal des données</h2>
+  
+  <button id="exportCsv" style="margin-bottom:10px;">
+  Exporter les données
+</button>
 
-  data.forEach(loc => {
-    if (loc.expertlat == null || loc.expertlon == null) return;
+<table id="campsTable" border="1" cellpadding="8" cellspacing="0" style="width:100%; margin-top:15px;">
+  <thead>
+    <tr>
+      <th>Nom</th>
+      <th>Date</th>
+      <th>Heure</th>
+      <th>Homme</th>
+      <th>Femme</th>
+	  <th>Seringue</th>
+	  <th>Pipe</th>
+	  <th>Sandwich</th>
+	  <th>Soupe/Eau</th>
+	  <th>Type</th>
+      <th>Note</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
-    const key = `${loc.expertlat},${loc.expertlon}`;
-
-    if (!groups.has(key)) {
-      groups.set(key, []);
-    }
-
-    groups.get(key).push(loc);
-  });
-
-  return groups;
-}
-
-function createNumberedIcon(count, type) {
-  let color;
-
-  if (type === "Walker") color = "#2b6cff";
-  else if (type === "Tent") color = "#2ecc71";
-  else color = "#e74c3c";
-
-  return L.divIcon({
-    className: "camp-marker",
-    html: `
-      <div style="
-        background:${color};
-        color:white;
-        border-radius:50%;
-        width:32px;
-        height:32px;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        font-weight:bold;
-        border:2px solid white;
-        box-shadow:0 0 4px rgba(0,0,0,0.5);
-      ">
-        ${count}
-      </div>
-    `,
-    iconSize: [32, 32],
-    iconAnchor: [16, 16]
-  });
-}
-
-window.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("exportCsv")
-    .addEventListener("click", exportToCSV);
-
-  document.getElementById("campSearch")
-    .addEventListener("input", e => {
-      renderCamps(e.target.value);
-    });
-	
-  document.getElementById("closePanel").addEventListener("click", () => {
-     document.getElementById("campPanel").style.display = "none";
-   });
-   
-  const now = new Date();
-  // Format: YYYY-MM-DD_HH-MM
-  const date = now.toISOString().slice(0, 10);
-  const time = now.toTimeString().slice(0, 5).replace(":", "-");
-   
-   document
-  .getElementById("exportSummaryCsv")
-  .addEventListener("click", () => {
-    exportTableToCSV("summaryTable", `Données_total_${date}_${time}.csv`);
-  });
+<!-- Summary Data Table -->
+<h2>Total des Données</h2>
+<button id="exportSummaryCsv" style="margin:10px 0;">
+  Exporter les données total
+</button>
+<table id="summaryTable" border="1" cellpadding="8" cellspacing="0"
+       style="width:100%; margin-top:15px;">
+  <thead>
+    <tr>
+      <th>Nom</th>
+      <th>Date</th>
+      <th>Total Hommes</th>
+      <th>Total Femmes</th>
+      <th>Total Seringues</th>
+      <th>Total Pipes</th>
+      <th>Total Sandwichs</th>
+      <th>Total Soupes/Eau</th>
+      <th>Resume</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
 
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-  fetchWaypoints();
-  fetchSummaryData();
-  setInterval(fetchWaypoints, 30000);
-});
-
+  <!-- Custom JS -->
+  <script src="script.js"></script>
+</body>
+</html>
