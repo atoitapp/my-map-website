@@ -48,6 +48,41 @@ if (!sessionStorage.getItem(AUTH_KEY)) {
 // Initialize map centered on Montreal
 const map = L.map('map').setView([45.5017, -73.5673], 13); // Montreal, zoomed in
 
+// Layer
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution: "© OpenStreetMap"
+}).addTo(map);
+
+// =====================
+// MAP LEGEND
+// =====================
+const legend = L.control({ position: "topright" });
+
+legend.onAdd = function () {
+  const div = L.DomUtil.create("div", "map-legend");
+
+  div.innerHTML = `
+    <strong>Légende</strong>
+    <div class="map-legend-item">
+      <div class="legend-color" style="background:#2b6cff;"></div>
+      <span>Passant</span>
+    </div>
+    <div class="map-legend-item">
+      <div class="legend-color" style="background:#2ecc71;"></div>
+      <span>Tente</span>
+    </div>
+    <div class="map-legend-item">
+      <div class="legend-color" style="background:#e74c3c;"></div>
+      <span>Seringue / Pipe</span>
+    </div>
+  `;
+
+  return div;
+};
+
+legend.addTo(map);
+
+
 // Add OpenStreetMap tiles
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '© OpenStreetMap contributors',
@@ -181,6 +216,7 @@ function renderCamps(filterText = "") {
         <td>${loc.sandwich}</td>
         <td>${loc.soup}</td>
         <td>${typeMap[typeKey] || loc.type || "Inconnu"}</td>
+		<td>${loc.expertlat} \\ ${loc.expertlon}</td>
         <td>${loc.campnotes || ""}</td>
       `;
       tableBody.appendChild(row);
@@ -266,6 +302,7 @@ function exportToCSV() {
   "Sandwich",
   "Soupe/Eau",
   "Type",
+  "Position",
   "Note"
 ];
 
@@ -302,6 +339,7 @@ function exportToCSV() {
   loc.sandwich,
   loc.soup,
   typeMap[typeKey] || loc.type || "Inconnu" ,
+  `${loc.expertlat} \ ${loc.expertlon}`,
   `"${(loc.campnotes || "").replace(/"/g, '""')}"`
 ];
 
