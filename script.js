@@ -216,7 +216,7 @@ function renderCamps(filterText = "") {
         <td>${loc.sandwich}</td>
         <td>${loc.soup}</td>
         <td>${typeMap[typeKey] || loc.type || "Inconnu"}</td>
-		<td>${loc.expertlat} \\ ${loc.expertlon}</td>
+		<td>${loc.expertlat}   ${loc.expertlon}</td>
         <td>${loc.campnotes || ""}</td>
       `;
       tableBody.appendChild(row);
@@ -472,4 +472,5 @@ window.addEventListener("DOMContentLoaded", () => {
   fetchSummaryData();
   setInterval(fetchWaypoints, 30000);
 });
+
 
