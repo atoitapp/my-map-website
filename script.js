@@ -216,7 +216,7 @@ function renderCamps(filterText = "") {
         <td>${loc.sandwich}</td>
         <td>${loc.soup}</td>
         <td>${typeMap[typeKey] || loc.type || "Inconnu"}</td>
-		<td>${loc.expertlat}   ${loc.expertlon}</td>
+		<td>${loc.expertlat}  ${loc.expertlon}</td>
         <td>${loc.campnotes || ""}</td>
       `;
       tableBody.appendChild(row);
@@ -392,8 +392,67 @@ function exportTableToCSV(tableId, filename) {
   URL.revokeObjectURL(url);
 }
 
+const GROUP_RADIUS_METERS = 5;  //5–30 meters 
+
+function distanceMeters(lat1, lon1, lat2, lon2) {
+  const R = 6371000; // Earth radius in meters
+  const toRad = d => d * Math.PI / 180;
+
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) *
+    Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) ** 2;
+
+  return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
 function groupByPosition(data) {
+  const groups = new Map();
+  let groupId = 0;
+
+  data.forEach(loc => {
+    if (loc.expertlat == null || loc.expertlon == null) return;
+
+    let foundGroupKey = null;
+
+    // Try to find an existing nearby group
+    for (const [key, group] of groups) {
+      const ref = group[0]; // representative point
+
+      const dist = distanceMeters(
+        ref.expertlat,
+        ref.expertlon,
+        loc.expertlat,
+        loc.expertlon
+      );
+
+      if (dist <= GROUP_RADIUS_METERS) {
+        foundGroupKey = key;
+        break;
+      }
+    }
+
+    // Add to existing group
+    if (foundGroupKey) {
+      groups.get(foundGroupKey).push(loc);
+    }
+    // Create new group
+    else {
+      const key = `group-${groupId++}`;
+      groups.set(key, [loc]);
+    }
+  });
+
+  return groups;
+}
+
+
+
+function groupByPosition0(data) {
   const groups = new Map();
 
   data.forEach(loc => {
@@ -472,5 +531,4 @@ window.addEventListener("DOMContentLoaded", () => {
   fetchSummaryData();
   setInterval(fetchWaypoints, 30000);
 });
-
 
