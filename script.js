@@ -131,6 +131,7 @@ async function fetchSummaryData() {
       <td>${row.totalpipe}</td>
       <td>${row.totalsandwich}</td>
       <td>${row.totalsoup}</td>
+	  <td>${row.totalsnack}</td>
       <td>${row.notes || ""}</td>
     `;
 
@@ -215,6 +216,7 @@ function renderCamps(filterText = "") {
         <td>${loc.pipe}</td>
         <td>${loc.sandwich}</td>
         <td>${loc.soup}</td>
+		<td>${loc.snack}</td>
         <td>${typeMap[typeKey] || loc.type || "Inconnu"}</td>
 		<td>${loc.expertlat}  ${loc.expertlon}</td>
         <td>${loc.campnotes || ""}</td>
@@ -272,6 +274,8 @@ function showCampsInPanel(key) {
 
         <div class="label">Sandwich / Soupe</div>
         <div class="value">${loc.sandwich} / ${loc.soup}</div>
+		<div class="label">Barre tendre</div>
+        <div class="value">${loc.snack}</div>
 
         <div class="label">Type</div>
         <div class="value">${typeMap[typeKey] || loc.type || "Inconnu"}</div>
@@ -301,6 +305,7 @@ function exportToCSV() {
   "Pipe",
   "Sandwich",
   "Soupe/Eau",
+  "Barre tendre",
   "Type",
   "Position",
   "Note"
@@ -338,6 +343,7 @@ function exportToCSV() {
   loc.pipe,
   loc.sandwich,
   loc.soup,
+  loc.snack,
   typeMap[typeKey] || loc.type || "Inconnu" ,
   `${loc.expertlat} \ ${loc.expertlon}`,
   `"${(loc.campnotes || "").replace(/"/g, '""')}"`
