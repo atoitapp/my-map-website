@@ -158,7 +158,7 @@ function renderCamps(filterText = "") {
     if (visible.length === 0) return;
 	visibleKeys.add(key);
 
-    const { camplat, camplon, type } = visible[0];
+    const { expertlat, expertlon, type } = visible[0];
     const icon = createNumberedIcon(visible.length, type);
 
     const popupContent = `
@@ -172,7 +172,7 @@ function renderCamps(filterText = "") {
         //.setPopupContent(popupContent)
         //.addTo(map);
     } else {
-      const marker = L.marker([camplat, camplon], { icon })
+      const marker = L.marker([expertlat, expertlon], { icon })
         .addTo(map)
 		.on("click", () => showCampsInPanel(key));
         //.bindPopup(popupContent);
@@ -318,8 +318,8 @@ function exportToCSV() {
   loc.women,
   loc.statut,
   loc.condition,
-  `${loc.camplat} \ ${loc.camplon}`,
-  `"${(loc.campnotes || "").replace(/"/g, '""')}"`
+  ${loc.camplat} \ ${loc.camplon},
+  "${(loc.campnotes || "").replace(/"/g, '""')}"
 ];
 
     rows.push(row.join(","));
@@ -337,7 +337,7 @@ function exportToCSV() {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `Données_d’expert_${date}_${time}.csv`;
+  link.download = Données_d’expert_${date}_${time}.csv;
 
   document.body.appendChild(link);
   link.click();
@@ -345,7 +345,7 @@ function exportToCSV() {
 }
 
 function exportTableToCSV(tableId, filename) {
-  const rows = document.querySelectorAll(`#${tableId} tr`);
+  const rows = document.querySelectorAll(#${tableId} tr);
   let csv = [];
 
   rows.forEach(row => {
@@ -354,7 +354,7 @@ function exportTableToCSV(tableId, filename) {
 
     cols.forEach(col => {
       let text = col.innerText.replace(/"/g, '""');
-      rowData.push(`"${text}"`);
+      rowData.push("${text}");
     });
 
     csv.push(rowData.join(","));
@@ -394,7 +394,7 @@ function groupByPosition(data) {
   let groupId = 0;
 
   data.forEach(loc => {
-    if (loc.camplat == null || loc.camplon == null) return;
+    if (loc.camplat == null || loc.expertlon == null) return;
 
     let foundGroupKey = null;
 
@@ -421,7 +421,7 @@ function groupByPosition(data) {
     }
     // Create new group
     else {
-      const key = `group-${groupId++}`;
+      const key = group-${groupId++};
       groups.set(key, [loc]);
     }
   });
@@ -437,7 +437,7 @@ function groupByPosition0(data) {
   data.forEach(loc => {
     if (loc.camplat == null || loc.camplon == null) return;
 
-    const key = `${loc.camplat},${loc.camplon}`;
+    const key = ${loc.camplat},${loc.camplon};
 
     if (!groups.has(key)) {
       groups.set(key, []);
@@ -501,7 +501,7 @@ window.addEventListener("DOMContentLoaded", () => {
    document
   .getElementById("exportSummaryCsv")
   .addEventListener("click", () => {
-    exportTableToCSV("summaryTable", `Données_total_${date}_${time}.csv`);
+    exportTableToCSV("summaryTable", Données_total_${date}_${time}.csv);
   });
 
 
@@ -510,4 +510,3 @@ window.addEventListener("DOMContentLoaded", () => {
   fetchSummaryData();
   setInterval(fetchWaypoints, 30000);
 });
-
