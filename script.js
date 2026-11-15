@@ -125,13 +125,9 @@ async function fetchSummaryData() {
     tr.innerHTML = `
       <td>${row.name}</td>
       <td>${row.date}</td>
+	  <td>${row.totalcamp}</td>
       <td>${row.totalmen}</td>
       <td>${row.totalwomen}</td>
-      <td>${row.totalsyringe}</td>
-      <td>${row.totalpipe}</td>
-      <td>${row.totalsandwich}</td>
-      <td>${row.totalsoup}</td>
-	  <td>${row.totalsnack}</td>
       <td>${row.notes || ""}</td>
     `;
 
@@ -212,11 +208,8 @@ function renderCamps(filterText = "") {
         <td>${loc.nowtime}</td>
         <td>${loc.men}</td>
         <td>${loc.women}</td>
-        <td>${loc.syringe}</td>
-        <td>${loc.pipe}</td>
-        <td>${loc.sandwich}</td>
-        <td>${loc.soup}</td>
-		<td>${loc.snack}</td>
+		<td>${loc.statut}</td>
+		<td>${loc.condition}</td>
         <td>${typeMap[typeKey] || loc.type || "Inconnu"}</td>
 		<td>${loc.expertlat}  ${loc.expertlon}</td>
         <td>${loc.campnotes || ""}</td>
@@ -269,13 +262,8 @@ function showCampsInPanel(key) {
         <div class="label">Homme / Femme</div>
         <div class="value">${loc.men} / ${loc.women}</div>
 
-        <div class="label">Seringue / Pipe</div>
-        <div class="value">${loc.syringe} / ${loc.pipe}</div>
-
-        <div class="label">Sandwich / Soupe</div>
-        <div class="value">${loc.sandwich} / ${loc.soup}</div>
-		<div class="label">Barre tendre</div>
-        <div class="value">${loc.snack}</div>
+        <div class="label">Statut / Condition</div>
+        <div class="value">${loc.statut} / ${loc.condition}</div>
 
         <div class="label">Type</div>
         <div class="value">${typeMap[typeKey] || loc.type || "Inconnu"}</div>
@@ -301,12 +289,8 @@ function exportToCSV() {
   "Heure",
   "Homme",
   "Femme",
-  "Seringue",
-  "Pipe",
-  "Sandwich",
-  "Soupe/Eau",
-  "Barre tendre",
-  "Type",
+  "Statut",
+  "Condition",
   "Position",
   "Note"
 ];
@@ -339,11 +323,8 @@ function exportToCSV() {
   loc.nowtime,
   loc.men,
   loc.women,
-  loc.syringe,
-  loc.pipe,
-  loc.sandwich,
-  loc.soup,
-  loc.snack,
+  loc.statut,
+  loc.condition,
   typeMap[typeKey] || loc.type || "Inconnu" ,
   `${loc.expertlat} \ ${loc.expertlon}`,
   `"${(loc.campnotes || "").replace(/"/g, '""')}"`
