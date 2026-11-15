@@ -189,7 +189,6 @@ function renderCamps(filterText = "") {
         loc.name?.toLowerCase().includes(search) ||
         loc.date?.toLowerCase().includes(search) ||
         loc.nowtime?.toLowerCase().includes(search) ||
-        loc.type?.toLowerCase().includes(search) ||
         loc.campnotes?.toLowerCase().includes(search);
 
       if (!matches) return;
@@ -303,7 +302,6 @@ function exportToCSV() {
       loc.name?.toLowerCase().includes(search) ||
       loc.date?.toLowerCase().includes(search) ||
       loc.nowtime?.toLowerCase().includes(search) ||
-	  loc.type?.toLowerCase().includes(search) ||
       loc.campnotes?.toLowerCase().includes(search);
 
     if (!matches) return;
@@ -324,7 +322,6 @@ function exportToCSV() {
   loc.women,
   loc.statut,
   loc.condition,
-  typeMap[typeKey] || loc.type || "Inconnu" ,
   `${loc.expertlat} \ ${loc.expertlon}`,
   `"${(loc.campnotes || "").replace(/"/g, '""')}"`
 ];
