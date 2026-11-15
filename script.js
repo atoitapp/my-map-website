@@ -208,7 +208,7 @@ function renderCamps(filterText = "") {
         <td>${loc.women}</td>
 		<td>${loc.statut}</td>
 		<td>${loc.condition}</td>
-		<td>${loc.expertlat}  ${loc.expertlon}</td>
+		<td>${loc.camplat}  ${loc.camplon}</td>
         <td>${loc.campnotes || ""}</td>
       `;
       tableBody.appendChild(row);
@@ -262,9 +262,6 @@ function showCampsInPanel(key) {
         <div class="label">Statut / Condition</div>
         <div class="value">${loc.statut} / ${loc.condition}</div>
 
-        <div class="label">Type</div>
-        <div class="value">${typeMap[typeKey] || loc.type || "Inconnu"}</div>
-
         <div class="label">Note</div>
         <div class="value note">${loc.campnotes || "—"}</div>
       </div>
@@ -304,7 +301,7 @@ function exportToCSV() {
       loc.campnotes?.toLowerCase().includes(search);
 
     if (!matches) return;
-    if (loc.expertlat == null || loc.expertlon == null) return;
+    if (loc.camplat == null || loc.camplon == null) return;
 	
 	const typeMap = {
 	  walker: "Passant",
@@ -321,7 +318,7 @@ function exportToCSV() {
   loc.women,
   loc.statut,
   loc.condition,
-  `${loc.expertlat} \ ${loc.expertlon}`,
+  `${loc.camplat} \ ${loc.camplon}`,
   `"${(loc.campnotes || "").replace(/"/g, '""')}"`
 ];
 
@@ -397,7 +394,7 @@ function groupByPosition(data) {
   let groupId = 0;
 
   data.forEach(loc => {
-    if (loc.expertlat == null || loc.expertlon == null) return;
+    if (loc.camplat == null || loc.expertlon == null) return;
 
     let foundGroupKey = null;
 
@@ -406,10 +403,10 @@ function groupByPosition(data) {
       const ref = group[0]; // representative point
 
       const dist = distanceMeters(
-        ref.expertlat,
-        ref.expertlon,
-        loc.expertlat,
-        loc.expertlon
+        ref.camplat,
+        ref.camplon,
+        loc.camplat,
+        loc.camplon
       );
 
       if (dist <= GROUP_RADIUS_METERS) {
@@ -438,9 +435,9 @@ function groupByPosition0(data) {
   const groups = new Map();
 
   data.forEach(loc => {
-    if (loc.expertlat == null || loc.expertlon == null) return;
+    if (loc.camplat == null || loc.camplon == null) return;
 
-    const key = `${loc.expertlat},${loc.expertlon}`;
+    const key = `${loc.camplat},${loc.camplon}`;
 
     if (!groups.has(key)) {
       groups.set(key, []);
