@@ -1,56 +1,32 @@
+
 let groupedCamps = new Map();
-
-// Not secure Password
-const AUTH_KEY = "authorized";
 let campsData = [];
+const markers = new Map();
 
+// Not secure: this password is visible in the JavaScript source.
+const AUTH_KEY = "authorized";
 
-//Waypoint Colors
-const iconBlue = new L.Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-
-const iconGreen = new L.Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-
-const iconRed = new L.Icon({
-  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-
+// =====================
+// AUTHENTIFICATION
+// =====================
 if (!sessionStorage.getItem(AUTH_KEY)) {
   const password = prompt("Entrez le mot de passe:");
+
   if (password !== "lsad123") {
     document.body.innerHTML = "<h1>Accès refusé</h1>";
     throw new Error("Mot de passe incorrect");
   }
+
   sessionStorage.setItem(AUTH_KEY, "true");
 }
 
-// Initialize map
-//const map = L.map('map').setView([0, 0], 2); // starting at world view
-// Initialize map centered on Montreal
-const map = L.map('map').setView([45.5017, -73.5673], 13); // Montreal, zoomed in
+// =====================
+// INITIALIZE MAP
+// =====================
+const map = L.map("map").setView([45.5017, -73.5673], 13);
 
-// Layer
 L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-  attribution: "© OpenStreetMap"
+  attribution: "© OpenStreetMap contributors"
 }).addTo(map);
 
 // =====================
@@ -82,26 +58,19 @@ legend.onAdd = function () {
 
 legend.addTo(map);
 
-
-// Add OpenStreetMap tiles
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© OpenStreetMap contributors',
-}).addTo(map);
-
-//Initialize OMS
-//const oms = new OverlappingMarkerSpiderfier(map, {
- // keepSpiderfied: true,
-//  nearbyDistance: 20
-//});
-
-const markers = new Map();
-
+// =====================
+// FETCH CAMPS
+// =====================
 async function fetchWaypoints() {
   try {
     const res = await fetch("https://dataexpert-api.onrender.com/camps");
+
+    if (!res.ok) {
+      throw new Error(`Erreur API: ${res.status}`);
+    }
+
     campsData = await res.json();
 
-    // Re-render map + table using current search filter
     const search =
       document.getElementById("campSearch")?.value || "";
 
@@ -112,41 +81,64 @@ async function fetchWaypoints() {
   }
 }
 
+// =====================
+// FETCH SUMMARY DATA
+// =====================
 async function fetchSummaryData() {
-  const res = await fetch("https://dataexpert-api.onrender.com/data");
-  const data = await res.json();
+  try {
+    const res = await fetch("https://dataexpert-api.onrender.com/data");
 
-  const tbody = document.querySelector("#summaryTable tbody");
-  tbody.innerHTML = "";
+    if (!res.ok) {
+      throw new Error(`Erreur API: ${res.status}`);
+    }
 
-  data.forEach(row => {
-    const tr = document.createElement("tr");
+    const data = await res.json();
 
-    tr.innerHTML = `
-      <td>${row.name}</td>
-      <td>${row.date}</td>
-	  <td>${row.totalcamp}</td>
-      <td>${row.totalmen}</td>
-      <td>${row.totalwomen}</td>
-      <td>${row.notes || ""}</td>
-    `;
+    const tbody = document.querySelector("#summaryTable tbody");
+    if (!tbody) return;
 
-    tbody.appendChild(tr);
-  });
+    tbody.innerHTML = "";
+
+    data.forEach(row => {
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td>${row.name ?? ""}</td>
+        <td>${row.date ?? ""}</td>
+        <td>${row.totalcamp ?? ""}</td>
+        <td>${row.totalmen ?? ""}</td>
+        <td>${row.totalwomen ?? ""}</td>
+        <td>${row.notes ?? ""}</td>
+      `;
+
+      tbody.appendChild(tr);
+    });
+
+  } catch (err) {
+    console.error("Échec du chargement du résumé :", err);
+  }
 }
 
-
+// =====================
+// RENDER CAMPS
+// =====================
 function renderCamps(filterText = "") {
   const visibleKeys = new Set();
+
   const tableBody = document.querySelector("#campsTable tbody");
+  if (!tableBody) return;
+
   tableBody.innerHTML = "";
-  //const seenIds = new Set();
+
   const search = filterText.toLowerCase();
 
+  // Group camps for map markers
   const groups = groupByPosition(campsData);
   groupedCamps = groups;
 
-  // ===== MAP MARKERS (ADD / UPDATE) =====
+  // =====================
+  // MAP MARKERS
+  // =====================
   groups.forEach((group, key) => {
     const visible = group.filter(loc =>
       loc.name?.toLowerCase().includes(search) ||
@@ -156,66 +148,67 @@ function renderCamps(filterText = "") {
     );
 
     if (visible.length === 0) return;
-	visibleKeys.add(key);
 
-    const { expertlat, expertlon, type } = visible[0];
+    visibleKeys.add(key);
+
+    const { camplat, camplon, type } = visible[0];
+
     const icon = createNumberedIcon(visible.length, type);
-
-    const popupContent = `
-      <strong>${visible.length} logs at this location</strong>
-    `;
 
     if (markers.has(key)) {
       markers.get(key)
+        .setLatLng([Number(camplat), Number(camplon)])
         .setIcon(icon)
-		.off("click").on("click", () => showCampsInPanel(key));
-        //.setPopupContent(popupContent)
-        //.addTo(map);
+        .off("click")
+        .on("click", () => showCampsInPanel(key));
+
     } else {
-      const marker = L.marker([expertlat, expertlon], { icon })
+      const marker = L.marker(
+        [Number(camplat), Number(camplon)],
+        { icon }
+      )
         .addTo(map)
-		.on("click", () => showCampsInPanel(key));
-        //.bindPopup(popupContent);
+        .on("click", () => showCampsInPanel(key));
 
       markers.set(key, marker);
     }
   });
 
-  // ===== TABLE (INDIVIDUAL CAMPS) =====
-  groups.forEach(group => {
-    group.forEach(loc => {
-      const matches =
-        loc.name?.toLowerCase().includes(search) ||
-        loc.date?.toLowerCase().includes(search) ||
-        loc.nowtime?.toLowerCase().includes(search) ||
-        loc.campnotes?.toLowerCase().includes(search);
+  // =====================
+  // TABLE - INDIVIDUAL CAMPS
+  // =====================
+  // Important: use campsData directly.
+  // This allows records without coordinates to appear in the table.
 
-      if (!matches) return;
-	  
-	  const typeMap = {
-	  walker: "Passant",
-      tent: "Tente",
-      nothing: " ",
-    };
-	const  = (loc.type || "").toLowerCase();
+  campsData.forEach(loc => {
+    const matches =
+      loc.name?.toLowerCase().includes(search) ||
+      loc.date?.toLowerCase().includes(search) ||
+      loc.nowtime?.toLowerCase().includes(search) ||
+      loc.campnotes?.toLowerCase().includes(search);
 
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${loc.name}</td>
-        <td>${loc.date}</td>
-        <td>${loc.nowtime}</td>
-        <td>${loc.men}</td>
-        <td>${loc.women}</td>
-		<td>${loc.statut}</td>
-		<td>${loc.condition}</td>
-		<td>${loc.camplat}  ${loc.camplon}</td>
-        <td>${loc.campnotes || ""}</td>
-      `;
-      tableBody.appendChild(row);
-    });
+    if (!matches) return;
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${loc.name ?? ""}</td>
+      <td>${loc.date ?? ""}</td>
+      <td>${loc.nowtime ?? ""}</td>
+      <td>${loc.men ?? ""}</td>
+      <td>${loc.women ?? ""}</td>
+      <td>${loc.statut ?? ""}</td>
+      <td>${loc.condition ?? ""}</td>
+      <td>${loc.camplat ?? ""} ${loc.camplon ?? ""}</td>
+      <td>${loc.campnotes ?? ""}</td>
+    `;
+
+    tableBody.appendChild(row);
   });
 
-  // ===== CLEANUP (THIS IS IT) =====
+  // =====================
+  // REMOVE INVISIBLE MARKERS
+  // =====================
   for (const [key, marker] of markers) {
     if (!visibleKeys.has(key)) {
       map.removeLayer(marker);
@@ -224,43 +217,38 @@ function renderCamps(filterText = "") {
   }
 }
 
+// =====================
+// SHOW CAMPS IN PANEL
+// =====================
 function showCampsInPanel(key) {
   const panel = document.getElementById("campPanel");
   const content = document.getElementById("campPanelContent");
-  
-  
 
   const camps = groupedCamps.get(key);
-  if (!camps) return;
+  if (!camps || !panel || !content) return;
 
   panel.style.display = "block";
   content.innerHTML = "";
 
   camps.forEach(loc => {
-	  const typeMap = {
-	  walker: "Passant",
-      tent: "Tente",
-      nothing: " ",
-    };
-	const  = (loc.type || "").toLowerCase();
     const div = document.createElement("div");
     div.className = "camp-item";
 
     div.innerHTML = `
-      <div class="camp-title">${loc.name}</div>
+      <div class="camp-title">${loc.name ?? ""}</div>
 
       <div class="camp-grid">
         <div class="label">Date</div>
-        <div class="value">${loc.date}</div>
+        <div class="value">${loc.date ?? ""}</div>
 
         <div class="label">Heure</div>
-        <div class="value">${loc.nowtime}</div>
+        <div class="value">${loc.nowtime ?? ""}</div>
 
         <div class="label">Homme / Femme</div>
-        <div class="value">${loc.men} / ${loc.women}</div>
+        <div class="value">${loc.men ?? ""} / ${loc.women ?? ""}</div>
 
         <div class="label">Statut / Condition</div>
-        <div class="value">${loc.statut} / ${loc.condition}</div>
+        <div class="value">${loc.statut ?? ""} / ${loc.condition ?? ""}</div>
 
         <div class="label">Note</div>
         <div class="value note">${loc.campnotes || "—"}</div>
@@ -271,29 +259,35 @@ function showCampsInPanel(key) {
   });
 }
 
+// =====================
+// CSV HELPER
+// =====================
+function csvValue(value) {
+  return `"${String(value ?? "").replace(/"/g, '""')}"`;
+}
+
+// =====================
+// EXPORT CAMPS TO CSV
+// =====================
 function exportToCSV() {
-  // Use CURRENTLY FILTERED data (what is visible)
   const search =
     document.getElementById("campSearch")?.value.toLowerCase() || "";
 
-  const rows = [];
   const headers = [
-  "Nom",
-  "Date",
-  "Heure",
-  "Homme",
-  "Femme",
-  "Statut",
-  "Condition",
-  "Position",
-  "Note"
-];
+    "Nom",
+    "Date",
+    "Heure",
+    "Homme",
+    "Femme",
+    "Statut",
+    "Condition",
+    "Position",
+    "Note"
+  ];
 
-
-  rows.push(headers.join(","));
+  const rows = [headers.map(csvValue).join(",")];
 
   campsData.forEach(loc => {
-    // Apply same filter as renderCamps
     const matches =
       loc.name?.toLowerCase().includes(search) ||
       loc.date?.toLowerCase().includes(search) ||
@@ -301,69 +295,76 @@ function exportToCSV() {
       loc.campnotes?.toLowerCase().includes(search);
 
     if (!matches) return;
-    if (loc.camplat == null || loc.camplon == null) return;
-	
-	const typeMap = {
-	  walker: "Passant",
-      tent: "Tente",
-      nothing: " ",
-    };
-	const  = (loc.type || "").toLowerCase();
+
+    const position =
+      `${loc.camplat ?? ""} ${loc.camplon ?? ""}`.trim();
 
     const row = [
-  loc.name,
-  loc.date,
-  loc.nowtime,
-  loc.men,
-  loc.women,
-  loc.statut,
-  loc.condition,
-  ${loc.camplat} \ ${loc.camplon},
-  "${(loc.campnotes || "").replace(/"/g, '""')}"
-];
+      loc.name,
+      loc.date,
+      loc.nowtime,
+      loc.men,
+      loc.women,
+      loc.statut,
+      loc.condition,
+      position,
+      loc.campnotes
+    ];
 
-    rows.push(row.join(","));
+    rows.push(row.map(csvValue).join(","));
   });
 
-  const csvContent = rows.join("\n");
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  
+  const csvContent = "\uFEFF" + rows.join("\n");
+
+  const blob = new Blob([csvContent], {
+    type: "text/csv;charset=utf-8;"
+  });
+
   const now = new Date();
-  // Format: YYYY-MM-DD_HH-MM
   const date = now.toISOString().slice(0, 10);
   const time = now.toTimeString().slice(0, 5).replace(":", "-");
 
-
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
+
   link.href = url;
-  link.download = Données_d’expert_${date}_${time}.csv;
+  link.download = `Données_d’expert_${date}_${time}.csv`;
 
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+
+  URL.revokeObjectURL(url);
 }
 
+// =====================
+// EXPORT SUMMARY TABLE TO CSV
+// =====================
 function exportTableToCSV(tableId, filename) {
-  const rows = document.querySelectorAll(#${tableId} tr);
-  let csv = [];
+  const table = document.getElementById(tableId);
+  if (!table) return;
+
+  const rows = table.querySelectorAll("tr");
+  const csv = [];
 
   rows.forEach(row => {
     const cols = row.querySelectorAll("th, td");
     const rowData = [];
 
     cols.forEach(col => {
-      let text = col.innerText.replace(/"/g, '""');
-      rowData.push("${text}");
+      rowData.push(csvValue(col.innerText));
     });
 
     csv.push(rowData.join(","));
   });
 
-  const csvBlob = new Blob([csv.join("\n")], { type: "text/csv" });
-  const url = URL.createObjectURL(csvBlob);
+  const csvBlob = new Blob(["\uFEFF" + csv.join("\n")], {
+    type: "text/csv;charset=utf-8;"
+  });
 
+  const url = URL.createObjectURL(csvBlob);
   const a = document.createElement("a");
+
   a.href = url;
   a.download = filename;
   a.click();
@@ -371,10 +372,13 @@ function exportTableToCSV(tableId, filename) {
   URL.revokeObjectURL(url);
 }
 
-const GROUP_RADIUS_METERS = 5;  //5–30 meters 
+// =====================
+// GROUP CAMPS BY POSITION
+// =====================
+const GROUP_RADIUS_METERS = 5;
 
 function distanceMeters(lat1, lon1, lat2, lon2) {
-  const R = 6371000; // Earth radius in meters
+  const R = 6371000;
   const toRad = d => d * Math.PI / 180;
 
   const dLat = toRad(lat2 - lat1);
@@ -394,19 +398,18 @@ function groupByPosition(data) {
   let groupId = 0;
 
   data.forEach(loc => {
-    if (loc.camplat == null || loc.expertlon == null) return;
+    if (loc.camplat == null || loc.camplon == null) return;
 
     let foundGroupKey = null;
 
-    // Try to find an existing nearby group
     for (const [key, group] of groups) {
-      const ref = group[0]; // representative point
+      const ref = group[0];
 
       const dist = distanceMeters(
-        ref.camplat,
-        ref.camplon,
-        loc.camplat,
-        loc.camplon
+        Number(ref.camplat),
+        Number(ref.camplon),
+        Number(loc.camplat),
+        Number(loc.camplon)
       );
 
       if (dist <= GROUP_RADIUS_METERS) {
@@ -415,13 +418,10 @@ function groupByPosition(data) {
       }
     }
 
-    // Add to existing group
-    if (foundGroupKey) {
+    if (foundGroupKey !== null) {
       groups.get(foundGroupKey).push(loc);
-    }
-    // Create new group
-    else {
-      const key = group-${groupId++};
+    } else {
+      const key = `group-${groupId++}`;
       groups.set(key, [loc]);
     }
   });
@@ -429,15 +429,16 @@ function groupByPosition(data) {
   return groups;
 }
 
-
-
+// =====================
+// ALTERNATIVE EXACT POSITION GROUPING
+// =====================
 function groupByPosition0(data) {
   const groups = new Map();
 
   data.forEach(loc => {
     if (loc.camplat == null || loc.camplon == null) return;
 
-    const key = ${loc.camplat},${loc.camplon};
+    const key = `${loc.camplat},${loc.camplon}`;
 
     if (!groups.has(key)) {
       groups.set(key, []);
@@ -449,12 +450,21 @@ function groupByPosition0(data) {
   return groups;
 }
 
+// =====================
+// NUMBERED MAP ICON
+// =====================
 function createNumberedIcon(count, type) {
   let color;
 
-  if (type === "Walker") color = "#2b6cff";
-  else if (type === "Tent") color = "#2ecc71";
-  else color = "#e74c3c";
+  const normalizedType = (type || "").toLowerCase();
+
+  if (normalizedType === "walker") {
+    color = "#2b6cff";
+  } else if (normalizedType === "tent") {
+    color = "#2ecc71";
+  } else {
+    color = "#e74c3c";
+  }
 
   return L.divIcon({
     className: "camp-marker",
@@ -480,33 +490,37 @@ function createNumberedIcon(count, type) {
   });
 }
 
+// =====================
+// PAGE EVENTS
+// =====================
 window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("exportCsv")
-    .addEventListener("click", exportToCSV);
+    ?.addEventListener("click", exportToCSV);
 
   document.getElementById("campSearch")
-    .addEventListener("input", e => {
+    ?.addEventListener("input", e => {
       renderCamps(e.target.value);
     });
-	
-  document.getElementById("closePanel").addEventListener("click", () => {
-     document.getElementById("campPanel").style.display = "none";
-   });
-   
+
+  document.getElementById("closePanel")
+    ?.addEventListener("click", () => {
+      document.getElementById("campPanel").style.display = "none";
+    });
+
   const now = new Date();
-  // Format: YYYY-MM-DD_HH-MM
   const date = now.toISOString().slice(0, 10);
   const time = now.toTimeString().slice(0, 5).replace(":", "-");
-   
-   document
-  .getElementById("exportSummaryCsv")
-  .addEventListener("click", () => {
-    exportTableToCSV("summaryTable", Données_total_${date}_${time}.csv);
-  });
 
-
+  document.getElementById("exportSummaryCsv")
+    ?.addEventListener("click", () => {
+      exportTableToCSV(
+        "summaryTable",
+        `Données_total_${date}_${time}.csv`
+      );
+    });
 
   fetchWaypoints();
   fetchSummaryData();
+
   setInterval(fetchWaypoints, 30000);
 });
