@@ -158,7 +158,7 @@ function renderCamps(filterText = "") {
     if (visible.length === 0) return;
 	visibleKeys.add(key);
 
-    const { expertlat, expertlon, type } = visible[0];
+    const { camplat, camplon, type } = visible[0];
     const icon = createNumberedIcon(visible.length, type);
 
     const popupContent = `
@@ -172,7 +172,7 @@ function renderCamps(filterText = "") {
         //.setPopupContent(popupContent)
         //.addTo(map);
     } else {
-      const marker = L.marker([expertlat, expertlon], { icon })
+      const marker = L.marker([camplat, camplon], { icon })
         .addTo(map)
 		.on("click", () => showCampsInPanel(key));
         //.bindPopup(popupContent);
@@ -197,7 +197,7 @@ function renderCamps(filterText = "") {
       tent: "Tente",
       nothing: " ",
     };
-	const typeKey = (loc.type || "").toLowerCase();
+	const  = (loc.type || "").toLowerCase();
 
       const row = document.createElement("tr");
       row.innerHTML = `
@@ -242,7 +242,7 @@ function showCampsInPanel(key) {
       tent: "Tente",
       nothing: " ",
     };
-	const typeKey = (loc.type || "").toLowerCase();
+	const  = (loc.type || "").toLowerCase();
     const div = document.createElement("div");
     div.className = "camp-item";
 
@@ -308,7 +308,7 @@ function exportToCSV() {
       tent: "Tente",
       nothing: " ",
     };
-	const typeKey = (loc.type || "").toLowerCase();
+	const  = (loc.type || "").toLowerCase();
 
     const row = [
   loc.name,
@@ -394,7 +394,7 @@ function groupByPosition(data) {
   let groupId = 0;
 
   data.forEach(loc => {
-    if (loc.camplat == null || loc.expertlon == null) return;
+    if (loc.camplat == null || loc.camplon == null) return;
 
     let foundGroupKey = null;
 
