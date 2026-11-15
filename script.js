@@ -210,7 +210,6 @@ function renderCamps(filterText = "") {
         <td>${loc.women}</td>
 		<td>${loc.statut}</td>
 		<td>${loc.condition}</td>
-        <td>${typeMap[typeKey] || loc.type || "Inconnu"}</td>
 		<td>${loc.expertlat}  ${loc.expertlon}</td>
         <td>${loc.campnotes || ""}</td>
       `;
