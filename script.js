@@ -285,7 +285,7 @@ function exportToCSV() {
     "Note"
   ];
 
-  const rows = [headers.map(csvValue).join(",")];
+  const rows = [headers.map(csvValue).join(";")];
 
   campsData.forEach(loc => {
     const matches =
@@ -311,7 +311,7 @@ function exportToCSV() {
       loc.campnotes
     ];
 
-    rows.push(row.map(csvValue).join(","));
+    rows.push(row.map(csvValue).join(";"));
   });
 
   const csvContent = "\uFEFF" + rows.join("\n");
@@ -328,7 +328,7 @@ function exportToCSV() {
   const link = document.createElement("a");
 
   link.href = url;
-  link.download = `Données_d’expert_${date}_${time}.xlsx`;
+  link.download = `Données_d’expert_${date}_${time}.csv`;
 
   document.body.appendChild(link);
   link.click();
