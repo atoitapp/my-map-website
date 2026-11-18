@@ -328,7 +328,7 @@ function exportToCSV() {
   const link = document.createElement("a");
 
   link.href = url;
-  link.download = `Données_d’expert_${date}_${time}.csv`;
+  link.download = `Données_d’expert_${date}_${time}.xlsx`;
 
   document.body.appendChild(link);
   link.click();
